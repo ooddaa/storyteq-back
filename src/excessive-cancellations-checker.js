@@ -1,9 +1,8 @@
 import fs from "node:fs";
-import { memoryUsage } from "node:process"
 import { parse } from "csv-parse";
 import { finished } from "node:stream/promises";
-import { calculateRatio, normalizeTrade } from "./utils";
-import RingBuffer from "./ring-buffer";
+import { calculateRatio, normalizeTrade } from "./utils.js";
+import RingBuffer from "./ring-buffer.js";
 
 const BUFFER_SIZE = 60;
 
@@ -132,18 +131,7 @@ export class ExcessiveCancellationsChecker {
   async companiesInvolvedInExcessiveCancellations() {
     this._isParsingComplete = false;
 
-    // gc()
-    const { heapUsed: memoryStart } = memoryUsage()
     await this.processFile();
-    const { heapUsed: memoryStop } = memoryUsage()
-    console.log("Heap used (Mb):", (memoryStop - memoryStart) / 1e6)
-    // 36 
-    // 43.8
-    // 42.8
-    // -16 !!!
-    // 36
-    // 41
-
 
     const excessives = Object.keys(this.acc).filter(
       (company) => this.acc[company].isExcessive,
