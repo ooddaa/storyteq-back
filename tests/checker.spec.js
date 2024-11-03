@@ -30,6 +30,12 @@ describe("Excessive Cancellations Test", () => {
             const companiesList = await checker.companiesInvolvedInExcessiveCancellations();
             expect(companiesList).toEqual(["Panda consulting"]);
         });
+       
+    it("returns a [] as there are only good companies", async () => {
+            const checker = new ExcessiveCancellationsChecker("./data/good_companies.csv")
+            const companiesList = await checker.companiesInvolvedInExcessiveCancellations();
+            expect(companiesList).toEqual([]);
+        });
 
     });
     describe("totalNumberOfWellBehavedCompanies", () => {
