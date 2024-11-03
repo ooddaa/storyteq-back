@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { parse } from "csv-parse";
 import { finished } from "node:stream/promises";
-import { calculateRatio, normalizeTrade } from "./utils";
+import { calculateRatio, normalizeTrade } from "./utils.js";
 
 const updateAcc = (acc, trade) => {
   let [timestamp, company, orderType, value] = trade;
