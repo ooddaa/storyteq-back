@@ -1,22 +1,39 @@
-import { ExcessiveCancellationsChecker } from './src/excessive-cancellations-checker.js'
-import { memoryUsage, stdout } from "node:process"
+import { ExcessiveCancellationsChecker } from "./src/excessive-cancellations-checker.js";
+import { memoryUsage, hrtime } from "node:process";
 
 async function main(limit = 10) {
-let heaps = []
-  for  (let i = 0; i < limit; ++i) {
-   const checker = new ExcessiveCancellationsChecker('./data/trades.csv');
-    gc()
-    const { heapUsed: memoryStart } = memoryUsage()
-   const companiesList = await checker.companiesInvolvedInExcessiveCancellations();
-    const { heapUsed: memoryStop } = memoryUsage()
-  heaps.push(memoryStop - memoryStart)
+  let times = [];
+  let heaps = [];
+  for (let i = 0; i < limit; ++i) {
+    const checker = new ExcessiveCancellationsChecker("./data/trades.csv");
+
+    gc();
+
+    const startTime = hrtime.bigint();
+    const { heapUsed: memoryStart } = memoryUsage();
+
+    await checker.companiesInvolvedInExcessiveCancellations();
+
+    const stopTime = hrtime.bigint();
+    const { heapUsed: memoryStop } = memoryUsage();
+
+    times.push(stopTime - startTime);
+    heaps.push(memoryStop - memoryStart);
   }
-    //console.log("Heap used (Mb):", (memoryStop - memoryStart) / 1e6)
-  return heaps
+  return [times, heaps];
 }
 
-function average(list) {
-  return list.reduce((a,b) => a += b, 0)/list.length
+function averageTime(list) {
+  return list.reduce((a, b) => (a += b), BigInt(0)) / BigInt(list.length);
+}
+function averageHeap(list) {
+  return list.reduce((a, b) => (a += b), 0) / list.length;
 }
 
-main(10).then(heaps => console.log("Avg Heap usage (Mb):", average(heaps) / 1e6))
+main(10).then(([times, heaps]) =>
+  console.table({
+    "runs": times.length,
+    "Avg time (ms):": Number(averageTime(times) / BigInt(1e6)),
+    "Avg Heap usage (Mb):": Number((averageHeap(heaps) / 1e6).toFixed(2)),
+  }),
+);
